@@ -57,15 +57,15 @@ RUN git clone https://github.com/cubiq/ComfyUI_essentials.git ComfyUI_essentials
 RUN pip install -r ./ComfyUI_essentials/requirements.txt --no-cache-dir
 
 RUN git clone https://github.com/XLabs-AI/x-flux-comfyui.git x-flux-comfyui
-RUN cd x-flux-comfyui && python setup.py
+RUN cd x-flux-comfyui && python3 setup.py --no-cache-dir
 
 RUN git clone https://github.com/gseth/ControlAltAI-Nodes.git ControlAltAI-Nodes
 
 RUN git clone https://github.com/silveroxides/ComfyUI_bnb_nf4_fp4_Loaders.git ComfyUI_bnb_nf4_fp4_Loaders
 RUN pip install -r ./ComfyUI_bnb_nf4_fp4_Loaders/requirements.txt --no-cache-dir
 
-RUN git clone https://github.com/yolain/ComfyUI-Easy-Use.git ComfyUI-Easy-Use
-RUN cd ComfyUI-Easy-Use && ./shell.py
+#RUN git clone https://github.com/yolain/ComfyUI-Easy-Use.git ComfyUI-Easy-Use
+#RUN cd ComfyUI-Easy-Use && chmod +x ./install.sh && ./install.sh
 
 # Go back to the root
 WORKDIR /
@@ -108,7 +108,7 @@ FROM base as downloader
 FROM base as final
 
 # Copy models from stage 2 to the final image
-COPY --from=downloader /comfyui/models /comfyui/models
+#COPY --from=downloader /comfyui/models /comfyui/models
 
 # Start the container
 CMD /start.sh
