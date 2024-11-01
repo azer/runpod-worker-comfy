@@ -196,20 +196,32 @@ def handler(job):
         logger.error(error_msg)
         return {"error": error_msg}
 
-    logger.info("Waiting for image generation to complete")
+    logger.info(f"Starting image generation polling with interval {COMFY_POLLING_INTERVAL_MS}ms and max retries {COMFY_POLLING_MAX_RETRIES}")
     retries = 0
+    start_time = time.time()
     try:
         while retries < COMFY_POLLING_MAX_RETRIES:
             history = get_history(prompt_id)
-            logger.debug(f"History: {history}")
+            elapsed_time = time.time() - start_time
+
+            logger.info(f"Checking history - Retry {retries+1}/{COMFY_POLLING_MAX_RETRIES}, "
+                       f"Elapsed time: {elapsed_time:.2f}s")
 
             if prompt_id in history and history[prompt_id].get("outputs"):
+                logger.info(f"Generation completed after {retries} retries and {elapsed_time:.2f} seconds")
                 break
+
+            # Log status if available
+            if prompt_id in history:
+                execution_status = history[prompt_id].get("status", {})
+                logger.info(f"Generation in progress - Status: {execution_status}")
             else:
-                time.sleep(COMFY_POLLING_INTERVAL_MS / 1000)
-                retries += 1
+                logger.warning(f"Prompt ID {prompt_id} not found in history")
+
+            time.sleep(COMFY_POLLING_INTERVAL_MS / 1000)
+            retries += 1
         else:
-            error_msg = "Max retries reached while waiting for image generation"
+            error_msg = f"Max retries ({COMFY_POLLING_MAX_RETRIES}) reached while waiting for image generation. Total time elapsed: {elapsed_time:.2f}s"
             logger.error(error_msg)
             return {"error": error_msg}
     except Exception as e:
